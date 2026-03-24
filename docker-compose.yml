@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: my_blog_api
+      POSTGRES_USER: my_blog_api_user
+      POSTGRES_PASSWORD: my_blog_api_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - my_blog_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: my_blog_api_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - my_blog_network
+
+networks:
+  my_blog_network:
+
+volumes:
+  postgres_data:
+  pgadmin_data:

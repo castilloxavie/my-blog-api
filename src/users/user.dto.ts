@@ -1,13 +1,35 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Type } from "class-transformer";
+import { IsEmail, isNotEmpty, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 
-export class createUserDto {
+export class CreateProfileDto {
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @IsString()
+  @IsNotEmpty()
+  LastName: string;
+
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+}
+
+
+export class createUserDto {
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
   @IsEmail()
   @IsNotEmpty()
   email: string;
+
+  @ValidateNested()
+  @Type(() => CreateProfileDto)
+  @IsNotEmpty()
+  profile: CreateProfileDto;
 
 }
 
