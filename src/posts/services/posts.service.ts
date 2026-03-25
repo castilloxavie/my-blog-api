@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, In, Repository } from 'typeorm';
 
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
+import { Category } from '../entities/category.entity';
 import { Post } from '../entities/post.entity';
 
 @Injectable()
@@ -12,12 +13,16 @@ export class PostsService {
   constructor(
     @InjectRepository(Post)
     private PostRepository: Repository<Post>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
   ){}
 
 
 
   async findAll () {
-   const posts = await this.PostRepository.find()
+   const posts = await this.PostRepository.find({
+     relations: ["categories", "user.profile"]
+   })
    return posts;
   }
 
@@ -35,27 +40,47 @@ async findByUserId(userId: number) {
 
   async create(body: CreatePostDto){
     try {
-      const post = await this.PostRepository.create({
-        ...body,
-        user: {id: body.userId}
-      })
-      await this.PostRepository.save(post)
-      return  this.findOne(post.id);
+      const { categories: catIds, userId, ...postData } = body;
+      const postDataObj: DeepPartial<Post> = {
+        ...postData,
+        user: { id: userId }
+      };
+
+      if (catIds && catIds.length > 0) {
+        const categories = await this.categoryRepository.find({
+          where: { id: In(catIds as number[]) }
+        });
+        (postDataObj as any).categories = categories;
+      }
+
+      const post: Post = await this.PostRepository.create(postDataObj);
+      await this.PostRepository.save(post);
+      return this.findOne(post.id);
 
     } catch (error) {
-      throw new BadRequestException("Error al crear el post")
+      throw new BadRequestException("Error al crear el post");
     }
   }
 
   async update(id: number, change: UpdatePostDto){
     try {
-      const post = await this.findOne(id)
-      const updatePost = this.PostRepository.merge(post, change)
-      const result = await this.PostRepository.save(updatePost)
+      const post = await this.findOne(id);
+      const { categories: catIds, ...changeData } = change;
+      let changeObj: DeepPartial<Post> = { ...changeData };
+
+      if (catIds && catIds.length > 0) {
+        const categories = await this.categoryRepository.find({
+          where: { id: In(catIds as number[]) }
+        });
+        (changeObj as any).categories = categories;
+      }
+
+      const updatePost = this.PostRepository.merge(post, changeObj);
+      const result = await this.PostRepository.save(updatePost);
       return result;
 
     } catch (error) {
-      throw new BadRequestException ("Error al actualizar el post")
+      throw new BadRequestException("Error al actualizar el post");
     }
   }
 
@@ -79,6 +104,13 @@ async findByUserId(userId: number) {
       throw new NotFoundException(` El post con el id ${id} no existe`)
     }
     return post;
+  }
+
+  async findPostsByCategoryId(categoryId: number) {
+    return await this.PostRepository.find({
+      where: { categories: { id: categoryId } },
+      relations: ["user.profile", "categories"]
+    });
   }
 
 
