@@ -1,14 +1,12 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 
-import { createUserDto, updateUserDto } from './user.dto';
+import { PostsService } from '../posts/posts.service';
+import { createUserDto, updateUserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
-
-
-
 
 @Controller('users')
 export class UsersController {
-  constructor(private useService: UsersService){}
+  constructor(private useService: UsersService, private readonly postsService: PostsService){}
 
 
   @Get()
@@ -20,6 +18,16 @@ export class UsersController {
   @Get(':id')
   findUser(@Param('id', ParseIntPipe) id: number){
     return this.useService.getUserByid(id);
+  }
+
+  @Get(':id/profile')
+  getProfile(@Param('id', ParseIntPipe) id: number){
+    return this.useService.getProfileByUserId(id);
+  }
+
+  @Get(':id/posts')
+  getPosts(@Param('id', ParseIntPipe) id: number){
+    return this.postsService.findByUserId(id);
   }
 
   @Post()

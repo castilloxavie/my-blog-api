@@ -2,8 +2,8 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { createUserDto, updateUserDto } from './dtos/user.dto';
 import { User } from './entitites/user.entity';
-import { createUserDto, updateUserDto } from './user.dto';
 
 @Injectable()
 export class UsersService {
@@ -21,9 +21,6 @@ export class UsersService {
 
   async getUserByid(id: number){
     const user = await this.findOne(id);
-    if(user.id === 1){
-      throw new ForbiddenException("este usuario no tiene permisos")
-    }
     return user
   }
 
@@ -41,22 +38,39 @@ export class UsersService {
   }
 
   async update(id: number, change: updateUserDto){
-    const user = await this.findOne(id)
-    const updateUser = this.UserRepository.merge(user, change)
-    await this.UserRepository.save(updateUser)
-    return updateUser;
+    try {
+      const user = await this.findOne(id)
+      const updateUser = this.UserRepository.merge(user, change)
+      const result = await this.UserRepository.save(updateUser)
+      return result;
+
+    } catch (error) {
+      throw new BadRequestException ("Error al actualizar el usuario")
+    }
+
   }
 
   async delete(id: number){
-    const user = await this.findOne(id)
-    await this.UserRepository.remove(user)
-    return user;
+    try {
+      const user = await this.findOne(id)
+      await this.UserRepository.remove(user)
+      return user;
+    } catch  {
+      throw new BadRequestException("Error al eliminar el usuario")
+    }
+
   }
 
-
+  async getProfileByUserId (id: number) {
+    const user = await this.findOne(id)
+    return user.profile;
+  }
 
   private async findOne(id: number){
-    const user = await this.UserRepository.findOneBy({id})
+    const user = await this.UserRepository.findOne({
+      where: {id},
+      relations: ["profile"]
+    })
 
     if(!user){
       throw new NotFoundException(`usuario no existe ${id}`)

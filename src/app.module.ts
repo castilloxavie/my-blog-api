@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UsersModule } from './users/users.module';
 import { EnvVars } from './env.model';
+import { PostsModule } from './posts/posts.module';
 
 
 @Module({
@@ -25,6 +26,7 @@ import { EnvVars } from './env.model';
       inject: [ConfigService],
     }),
     UsersModule,
+    PostsModule,
   ],
 })
 

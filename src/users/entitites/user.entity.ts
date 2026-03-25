@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Post } from "src/posts/entities/post.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 import { Profile } from "./profile.entity";
 
@@ -22,4 +23,7 @@ export class User{
   @OneToOne(() => Profile, {nullable: false, cascade: true})
   @JoinColumn({name: "profile_id"})
   profile: Profile;
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 }
