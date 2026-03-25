@@ -1,6 +1,6 @@
-import { User } from "../../users/entitites/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 
+import { User } from "../../users/entitites/user.entity";
 import { Category } from "./category.entity";
 
 @Entity({
@@ -16,7 +16,7 @@ export class Post {
   @Column({ type: 'text', nullable: true })
   content: string;
 
-  @Column({type: "varchar", length: 255, name: "cover_image", nullable: true})
+  @Column({type: "varchar", length: 500, name: "cover_image", nullable: true})
   coverImage: string;
 
   @Column({ type: 'varchar', length: 255, name: "sumary", nullable: true })

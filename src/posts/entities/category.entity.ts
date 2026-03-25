@@ -15,6 +15,9 @@ export class Category {
   @Column({ type: 'varchar', length: 255, nullable: true })
   description: string;
 
+  @Column({type: "varchar", length: 255, name: "cover_image", nullable: true})
+  coverImage: string;
+
   @CreateDateColumn({ type: "timestamptz", default: () => "CURRENT_TIMESTAMP", name: "created_at" })
   createdAt: Date;
 
