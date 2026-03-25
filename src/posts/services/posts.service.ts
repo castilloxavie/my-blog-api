@@ -2,9 +2,9 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { Post } from './entities/post.entity';
+import { CreatePostDto } from '../dto/create-post.dto';
+import { UpdatePostDto } from '../dto/update-post.dto';
+import { Post } from '../entities/post.entity';
 
 @Injectable()
 export class PostsService {
@@ -13,6 +13,8 @@ export class PostsService {
     @InjectRepository(Post)
     private PostRepository: Repository<Post>,
   ){}
+
+
 
   async findAll () {
    const posts = await this.PostRepository.find()
@@ -78,5 +80,9 @@ async findByUserId(userId: number) {
     }
     return post;
   }
+
+
 }
+
+
 
