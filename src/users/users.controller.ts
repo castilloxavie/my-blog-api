@@ -1,12 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 
-import { PostsService } from '../posts/services/posts.service';
 import { createUserDto, updateUserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private useService: UsersService, private readonly postsService: PostsService){}
+  constructor(private useService: UsersService){}
 
 
   @Get()
@@ -27,7 +26,7 @@ export class UsersController {
 
   @Get(':id/posts')
   getPosts(@Param('id', ParseIntPipe) id: number){
-    return this.postsService.findByUserId(id);
+    return this.useService.getUserByid(id);
   }
 
   @Post()

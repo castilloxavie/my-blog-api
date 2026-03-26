@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -10,13 +10,12 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User)
-    private UserRepository: Repository<User>,
-  ){}
+    private userRepository: Repository<User>,
+  ) {}
 
   async findAll () {
-   const user = await this.UserRepository.find()
+   const user = await this.userRepository.find()
    return user;
-
   }
 
   async getUserByid(id: number){
@@ -26,39 +25,33 @@ export class UsersService {
 
   async create(body: createUserDto){
     try {
-      const user = await this.UserRepository.create(body)
-      await this.UserRepository.save(user)
-      return user;
-
+      const user = await this.userRepository.create(body)
+      const result = await this.userRepository.save(user)
+      return this.findOne(result.id);
     } catch (error) {
-      throw new BadRequestException("Error al crear el usuario")
+      throw new BadRequestException(error.message || "Error al crear el usuario")
     }
-
-
   }
 
   async update(id: number, change: updateUserDto){
     try {
       const user = await this.findOne(id)
-      const updateUser = this.UserRepository.merge(user, change)
-      const result = await this.UserRepository.save(updateUser)
+      const updateUser = this.userRepository.merge(user, change)
+      const result = await this.userRepository.save(updateUser)
       return result;
-
     } catch (error) {
-      throw new BadRequestException ("Error al actualizar el usuario")
+      throw new BadRequestException(error.message || "Error al actualizar el usuario")
     }
-
   }
 
   async delete(id: number){
     try {
       const user = await this.findOne(id)
-      await this.UserRepository.remove(user)
+      await this.userRepository.remove(user)
       return user;
-    } catch  {
-      throw new BadRequestException("Error al eliminar el usuario")
+    } catch (error) {
+      throw new BadRequestException(error.message || "Error al eliminar el usuario")
     }
-
   }
 
   async getProfileByUserId (id: number) {
@@ -67,7 +60,7 @@ export class UsersService {
   }
 
   private async findOne(id: number){
-    const user = await this.UserRepository.findOne({
+    const user = await this.userRepository.findOne({
       where: {id},
       relations: ["profile"]
     })
@@ -78,4 +71,4 @@ export class UsersService {
     return user;
   }
 
-  }
+}

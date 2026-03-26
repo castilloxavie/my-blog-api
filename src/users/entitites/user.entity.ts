@@ -1,6 +1,8 @@
-import { Post } from "../../posts/entities/post.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import * as bcrypt from "bcrypt";
+import { BeforeInsert, Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Exclude } from "class-transformer"
 
+import { Post } from "../../posts/entities/post.entity";
 import { Profile } from "./profile.entity";
 
 @Entity({name: "users"})
@@ -11,7 +13,8 @@ export class User{
   @Column({type: "varchar", length: 100,unique: true })
   email: string;
 
-  @Column({type: "varchar", length: 50 })
+  @Exclude()
+  @Column({type: "varchar", length: 255 })
   password: string;
 
   @CreateDateColumn({type: "timestamptz", default: () => "CURRENT_TIMESTAMP", name: "created_at"})
@@ -26,4 +29,9 @@ export class User{
 
   @OneToMany(() => Post, (post) => post.user)
   posts: Post[];
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
 }
