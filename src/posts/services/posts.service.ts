@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, In, Repository } from 'typeorm';
 
+import { OpenaiService } from '../../ai/services/openai.service';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { Category } from '../entities/category.entity';
@@ -15,6 +16,7 @@ export class PostsService {
     private PostRepository: Repository<Post>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    private readonly openaiService: OpenaiService
   ){}
 
 
@@ -113,6 +115,33 @@ async findByUserId(userId: number) {
     });
   }
 
+  async publish(id: number, userId: number) {
+    try {
+
+      const post = await this.findOne(id)
+      if(post.user.id !== userId) {
+        throw new ForbiddenException("No tienes permiso para publicar este post")
+      }
+
+      if(!post.content || !post.title || post.categories.length === 0) {
+        throw new BadRequestException("El post no está completo y no se puede publicar. Asegúrate de que tenga título, contenido y al menos una categoría.")
+      }
+
+      const summary = await this.openaiService.generateSummary(post.content);
+      const imageUrl = await this.openaiService.generateImage(summary);
+      const changes = this.PostRepository.merge(post, {
+        isDraft: false,
+        sumary: summary,
+        coverImage: imageUrl
+      })
+
+      const updatedPost = await this.PostRepository.save(changes);
+      return this.findOne(updatedPost.id);
+
+    } catch (error) {
+      throw new BadRequestException("Error al publicar el post")
+    }
+  }
 
 }
 

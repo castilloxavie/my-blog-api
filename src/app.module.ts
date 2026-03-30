@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { UsersModule } from './users/users.module';
+import { AiModule } from './ai/ai.module';
+import { OpenaiService } from './ai/services/openai.service';
+import { AuthModule } from './auth/auth.module';
 import { EnvVars } from './env.model';
 import { PostsModule } from './posts/posts.module';
-import { AuthModule } from './auth/auth.module';
-
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -29,7 +30,9 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     PostsModule,
     AuthModule,
+    AiModule,
   ],
+  providers: [OpenaiService],
 })
 
 export class AppModule {}
