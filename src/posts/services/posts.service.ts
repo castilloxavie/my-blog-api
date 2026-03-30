@@ -38,9 +38,9 @@ async findByUserId(userId: number) {
     });
   }
 
-  async create(body: CreatePostDto){
+  async create(body: CreatePostDto, userId: number){
     try {
-      const { categories: catIds, userId, ...postData } = body;
+    const { categories: catIds, ...postData } = body;
       const postDataObj: DeepPartial<Post> = {
         ...postData,
         user: { id: userId }

@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
 
+import type { Request } from 'express';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { PostsService } from '../services/posts.service';
 import { AuthGuard } from '@nestjs/passport';
+import { Payload } from 'src/auth/models/payload.model';
 
 // @UseGuards(AuthGuard("jwt")) --> es para proteger todas las rutas, se coloca a nivel superior de los controller
 @Controller('posts')
@@ -12,8 +14,10 @@ export class PostsController {
 
   @UseGuards(AuthGuard("jwt"))
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  create(@Body() createPostDto: CreatePostDto, @Req() req: Request) {
+    const payload = req.user as Payload
+    const userId = payload.sub
+    return this.postsService.create(createPostDto, userId);
   }
 
   @Get()
